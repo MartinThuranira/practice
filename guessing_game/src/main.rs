@@ -1,15 +1,15 @@
 use rand::Rng;
-use std::{cmp::Ordering, io};
+use std::{cmp::Ordering, io::{self,ErrorKind,Error}};
 
 pub struct Guess {
     value: i32,
 }
 impl Guess {
-    pub fn new(value: i32) -> Guess {
+    pub fn new(value: i32) -> Result<Guess, Error> {
         if value < 1 || value > 100 {
-            panic!("Guess value must be between 1 and 100, got {}.", value);
+            return Err(Error::new(ErrorKind::Other,"Value must be between 1 and 100"));
         }
-        Guess { value }
+        Ok(Guess { value })
     }
     pub fn value(&self) -> i32 {
         self.value
@@ -26,7 +26,13 @@ fn main() {
             .read_line(&mut guess)
             .expect("Failed to read line");
         let guess: Guess = match guess.trim().parse() {
-            Ok(num) => Guess::new(num),
+            Ok(num) => match Guess::new(num){
+                Ok(value) => value,
+                Err(err) => {
+                    println!("{}",err);
+                    continue
+                }
+            },
             Err(_) => {
                 println!("Input a valid value");
                 continue
